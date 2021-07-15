@@ -1,2 +1,2 @@
-project_id = "gke-istio-test-psb"
+project_id = ""
 region     = "us-central1"
