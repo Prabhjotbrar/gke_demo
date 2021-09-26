@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: posthookcontainer
+  namespace: tsb
+  annotations:
+    "helm.sh/hook": "post-install"
+    "helm.sh/hook-weight": "-5"
+#    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  serviceAccountName: tsb-operator-management-plane
+  containers:
+  - name: hooktainer
+    image: gcr.io/gke-istio-test-psb/tctl:v8
+    imagePullPolicy: IfNotPresent
+    env:
+    {{- range $key, $val := .Values.env }}
+      - name: {{ $key }}
+        value: {{ $val | quote }}
+    {{- end }}
+    command: ['sh', '-c', '--']    
+    args:
+    - | 
+        sleep 20;
+        until curl -vk https://elasticsearch-es-http.elastic:9200; do echo waiting for es to come up && sleep 10;done
+        sleep 10;
+        kubectl get secret -n elastic elasticsearch-es-http-certs-public -o json -o=jsonpath="{.data.ca\.crt}" | base64 -d > /tmp/es.pem
+        export ELASTIC_PASS=$(kubectl get secret -n elastic elasticsearch-es-elastic-user -o json |jq .data.elastic | tr -d '"' | base64 -d) 
+        export PG_PASS=$(kubectl get secret -n pgsql tsb-user.acid-cluster.credentials.postgresql.acid.zalan.do -o json |jq .data.password | tr -d '"' | base64 -d)
+        tctl install manifest management-plane-secrets --tsb-admin-password admin --tsb-server-certificate "$(cat /tmp/dummy.cert.pem)" --tsb-server-key "$(cat /tmp/dummy.key.pem)" --postgres-username tsb_user --postgres-password $PG_PASS  --elastic-username elastic --elastic-password $ELASTIC_PASS --allow-defaults --elastic-ca-certificate "$(cat /tmp/es.pem)" --xcp-certs | kubectl apply -f -
+        cat <<EOF | kubectl apply -f -
+        apiVersion: install.tetrate.io/v1alpha1
+        kind: ManagementPlane
+        metadata:
+          name: managementplane
+          namespace: tsb
+        spec:
+          dataStore:
+            postgres:
+              connectionLifetime: 8500s
+              host: acid-cluster.pgsql.svc
+              name: my_tsb
+              port: 5432
+          hub: {{ .Values.image.registry }}
+          organization: tetrate
+          identityProvider:
+            demoLdap:
+              disableTLS: true
+              host: ldap
+              iam:
+                matchDN: cn=%s,ou=People,dc=tetrate,dc=io
+                matchFilter: (&(objectClass=person)(uid=%s))
+              port: 389
+              search:
+                baseDN: dc=tetrate,dc=io
+                recursive: true
+              sync:
+                groupsFilter: (objectClass=groupOfUniqueNames)
+                membershipAttribute: uniqueMember
+                usersFilter: (objectClass=person)
+          telemetryStore:
+            elastic:
+              host: elasticsearch-es-http.elastic.svc
+              port: 9200
+              selfSigned: true
+              version: 7
+          tenant: tetrate
+          tokenIssuer:
+            jwt:
+              expiration: 3600s
+              issuers:
+              - name: https://demo.tetrate.io
+                signingKey: tls.key
+              refreshExpiration: 2592000s
+              tokenPruneInterval: 3600s
+        EOF
+        sleep 30
+        until nslookup oap.tsb.svc.cluster.local;do echo waiting for oap to come up && sleeip 10;done
+        kubectl create job -n tsb teamsync-bootstrap --from=cronjob/teamsync
+        sleep 30;
+        mpaddress=34.210.87.51
+        mpport=$(kubectl get svc -n tsb envoy -o jsonpath='{.spec.ports[0].nodePort}')
+        tctl config clusters set $mpcluster --bridge-address $mpaddress:$mpport
+        tctl config profiles set $mpcluster --cluster $mpcluster
+        tctl config profiles  set-current $mpcluster
+        TCTL_LOGIN_ORG=tetrate TCTL_LOGIN_TENANT=tetrate TCTL_LOGIN_USERNAME=admin TCTL_LOGIN_PASSWORD=$password tctl login
+        cat <<EOF | tctl apply -f -
+        apiVersion: api.tsb.tetrate.io/v2
+        kind: Cluster
+        metadata:
+          name: $cpcluster
+          organization: tetrate
+        spec:
+          tier1Cluster: false
+          tokenTtl: 31536000s # 1y
+        EOF
+        sleep 5
+        kubectl get secret -n elastic elasticsearch-es-http-certs-public -o json -o=jsonpath="{.data.ca\.crt}" | base64 -d > /tmp/es.pem
+        export ELASTIC_PASS=$(kubectl get secret -n elastic elasticsearch-es-elastic-user -o json |jq .data.elastic | tr -d '"' | base64 -d)
+        sleep 2;
+        tctl install manifest control-plane-secrets  --allow-defaults  --elastic-password $ELASTIC_PASS --elastic-username elastic  --elastic-ca-certificate "$(cat /tmp/es.pem)" --cluster $cpcluster --xcp-certs "$(tctl install cluster-certs --cluster $cpcluster)" | kubectl apply -f -
+        sleep 10
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0
