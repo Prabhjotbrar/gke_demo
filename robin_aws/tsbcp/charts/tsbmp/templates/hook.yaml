@@ -11,7 +11,7 @@ spec:
   serviceAccountName: tsb-operator-management-plane
   containers:
   - name: hooktainer
-    image: gcr.io/gke-istio-test-psb/tctl:v8
+    image: gcr.io/gke-istio-test-psb/tctl:1.4.0-EA6
     imagePullPolicy: IfNotPresent
     env:
     {{- range $key, $val := .Values.env }}
@@ -22,8 +22,8 @@ spec:
     args:
     - | 
         sleep 20;
-        until curl -vk https://elasticsearch-es-http.elastic:9200; do echo waiting for es to come up && sleep 10;done
-        sleep 10;
+        until curl -vk https://elasticsearch-es-http.elastic:9200; do echo waiting for es to come up && sleep 3;done
+        sleep 8;
         kubectl get secret -n elastic elasticsearch-es-http-certs-public -o json -o=jsonpath="{.data.ca\.crt}" | base64 -d > /tmp/es.pem
         export ELASTIC_PASS=$(kubectl get secret -n elastic elasticsearch-es-elastic-user -o json |jq .data.elastic | tr -d '"' | base64 -d) 
         export PG_PASS=$(kubectl get secret -n pgsql tsb-user.acid-cluster.credentials.postgresql.acid.zalan.do -o json |jq .data.password | tr -d '"' | base64 -d)
@@ -78,9 +78,8 @@ spec:
         until nslookup oap.tsb.svc.cluster.local;do echo waiting for oap to come up && sleeip 10;done
         kubectl create job -n tsb teamsync-bootstrap --from=cronjob/teamsync
         sleep 30;
-        mpaddress=34.210.87.51
         mpport=$(kubectl get svc -n tsb envoy -o jsonpath='{.spec.ports[0].nodePort}')
-        tctl config clusters set $mpcluster --bridge-address $mpaddress:$mpport
+        tctl config clusters set $mpcluster --bridge-address $mpaddress:$mpport --tls-insecure
         tctl config profiles set $mpcluster --cluster $mpcluster
         tctl config profiles  set-current $mpcluster
         TCTL_LOGIN_ORG=tetrate TCTL_LOGIN_TENANT=tetrate TCTL_LOGIN_USERNAME=admin TCTL_LOGIN_PASSWORD=$password tctl login

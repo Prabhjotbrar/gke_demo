@@ -3,19 +3,28 @@
 # Declare variables to be passed into your templates.
 
 #replicaCount: 1
-
+globals:
+  cert-manager:
+    enabled: true
+  eck-operator:
+    enabled: true
+  postgres-operator:
+    enabled: true
+  tsbmp:
+    enabled: true
 
 image:
   registry: gcr.io/gke-istio-test-psb
   repository: 
-  tag: 1.3.0
+  tag: 1.4.0-EA6
   pullPolicy: "IfNotPresent"
 
 
 env:
-  cpcluster: cp-h
-  mpcluster: mp-h
+  cpcluster: robincp1
+  mpcluster: robinmp
   password: admin
+  mpaddress: 34.217.17.60
 
 # imagePullSecrets: []
 # nameOverride: ""

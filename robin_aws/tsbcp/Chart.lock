@@ -1,0 +1,15 @@
+dependencies:
+- name: cert-manager
+  repository: file://subcharts/cert-manager
+  version: v1.5.3
+- name: eck-operator
+  repository: file://subcharts/eck-operator
+  version: 1.7.1
+- name: postgres-operator
+  repository: file://subcharts/postgres-operator
+  version: 1.6.3
+- name: tsbmp
+  repository: file://subcharts/tsbmp
+  version: 1.3.0
+digest: sha256:a396cdfa8fa2a7b8981a12d2e010b3c23797ce66d9a9aa874c4a1ba4e9eedf03
+generated: "2021-09-26T07:01:21.90549979Z"

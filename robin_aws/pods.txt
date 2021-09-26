@@ -1,0 +1,11 @@
+istio-system edge-56cdf54899-t65l9
+istio-system edge-7c4f69b646-xx68m
+istio-system otel-collector-7fbbcd8ffc-vrgtz
+kube-system calico-kube-controllers-857dfc7bbb-j76k9
+kube-system coredns-78545b7666-krhlq
+robinio csi-attacher-robin-5dd569cf94-7rj8t
+robinio csi-provisioner-robin-6d9ff549bf-h8c59
+robinio csi-resizer-robin-7596669949-zkqkt
+robinio csi-snapshotter-robin-0
+robinio snapshot-controller-0
+tsb teamsync-1632672000-lk7ml

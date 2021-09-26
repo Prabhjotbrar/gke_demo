@@ -81,6 +81,7 @@ rules:
   - replicasets
   - statefulsets
   - cronjobs
+  - jobs
   verbs:
   - '*'
 - apiGroups:
@@ -174,6 +175,9 @@ rules:
   - apiGroups: ["cert-manager.io"]
     resources: ["issuers"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["certificates"]
+    verbs: ["get", "list", "watch","create","update"]
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch", "create", "update", "delete"]

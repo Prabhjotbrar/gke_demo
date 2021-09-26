@@ -11,7 +11,7 @@ spec:
   serviceAccountName: tsb-operator-management-plane
   containers:
   - name: phooktainer
-    image: gcr.io/gke-istio-test-psb/tctl:v8
+    image: gcr.io/gke-istio-test-psb/tctl:1.4.0-EA6
     imagePullPolicy: IfNotPresent
     env:          
     {{- range $key, $val := .Values.env }}
@@ -24,7 +24,6 @@ spec:
         sleep 20;
         until curl -vk curl -vk https://envoy.tsb.svc.cluster.local:8443; do echo waiting for envoy to come up && sleep 10;done
         sleep 10
-        mpaddress=34.210.87.51
         mpport=$(kubectl get svc -n tsb envoy -o jsonpath='{.spec.ports[0].nodePort}')
         sleep 5
         cat <<EOF | kubectl apply -f -

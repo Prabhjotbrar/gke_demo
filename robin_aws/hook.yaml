@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: posthookcontainer
+  annotations:
+    "helm.sh/hook": "post-install"
+    "helm.sh/hook-weight": "-5"
+#    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  containers:
+  - name: hooktainer
+    image: gcr.io/gke-istio-test-psb/tctl:1.4.0-EA6
+    imagePullPolicy: IfNotPresent
+    command: ['sh', '-c', '--']    
+    args:
+    - | 
+        sleep 9000;
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0
