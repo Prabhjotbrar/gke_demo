@@ -90,8 +90,12 @@ spec:
           name: $cpcluster
           organization: tetrate
         spec:
-          tier1Cluster: false
+          displayName: Management Plane
+          network: tier1
+          tier1Cluster: true
           tokenTtl: 31536000s # 1y
+          locality:
+            region: us-west-2/us-west-2b
         EOF
         sleep 5
         kubectl get secret -n elastic elasticsearch-es-http-certs-public -o json -o=jsonpath="{.data.ca\.crt}" | base64 -d > /tmp/es.pem

@@ -1,0 +1,25 @@
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  name: coredc1
+  organization: tetrate
+spec:
+  displayName: coredc1
+  network: tier2
+  tier1Cluster: false
+  tokenTtl: "8760h"
+  locality:
+    region: us-west-2/us-west-2a
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  name: coredc2
+  organization: tetrate
+spec:
+  displayName: coredc2
+  network: tier2
+  tier1Cluster: false
+  tokenTtl: "8760h"
+  locality:
+    region: us-west-2/us-west-2c

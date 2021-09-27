@@ -16,7 +16,7 @@ env:
   cpcluster: robincp1
   mpcluster: robinmp
   password: admin
-  mpaddress: 34.217.17.60
+  mpaddress: 18.237.115.172
 
 # imagePullSecrets: []
 # nameOverride: ""

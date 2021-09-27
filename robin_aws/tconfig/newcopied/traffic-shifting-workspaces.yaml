@@ -1,0 +1,27 @@
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  tenant: tetrate
+  organization: tetrate
+  name: bookinfo-workspace
+spec:
+  description: for bookinfo
+  displayName: bookinfo
+  namespaceSelector:
+    names:
+      - "coredc1/bookinfo"
+      - "coredc2/bookinfo"
+---
+# workspace for tier-1
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  tenant: tetrate
+  organization: tetrate
+  name: tier1-workspace
+spec:
+  description: for tier1
+  displayName: tier1
+  namespaceSelector:
+    names:
+      - "robincp1/tier1"
